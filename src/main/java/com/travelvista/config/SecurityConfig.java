@@ -106,143 +106,185 @@ public class SecurityConfig {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
+    // =========================================================
+    // PASSWORD ENCODER
+    // =========================================================
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // =========================================================
+    // SECURITY FILTER CHAIN
+    // =========================================================
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            // =========================
+
+            // =================================================
             // CORS
-            // =========================
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-            // =========================
-            // CSRF
-            // =========================
-            .csrf(csrf -> csrf.disable())
-
-            // =========================
-            // Stateless JWT Session
-            // =========================
-            .sessionManagement(sm ->
-                sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            // =================================================
+            .cors(cors ->
+                cors.configurationSource(corsConfigurationSource())
             )
 
-            // =========================
-            // Authorization
-            // =========================
+            // =================================================
+            // CSRF
+            // =================================================
+            .csrf(csrf -> csrf.disable())
+
+            // =================================================
+            // STATELESS JWT SESSION
+            // =================================================
+            .sessionManagement(sm ->
+                sm.sessionCreationPolicy(
+                    SessionCreationPolicy.STATELESS
+                )
+            )
+
+            // =================================================
+            // AUTHORIZATION
+            // =================================================
             .authorizeHttpRequests(auth -> auth
 
-                // ---------------------------------
-                // OPTIONS / CORS preflight
-                // ---------------------------------
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                // -------------------------------------------------
+                // CORS PREFLIGHT
+                // -------------------------------------------------
+                .requestMatchers(
+                    HttpMethod.OPTIONS,
+                    "/**"
+                ).permitAll()
 
-                // ---------------------------------
-                // Admin Login
-                // ---------------------------------
+                // -------------------------------------------------
+                // ADMIN LOGIN
+                // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.POST,
                     "/api/admin/login"
                 ).permitAll()
 
-                // ---------------------------------
-                // Admin Me
-                // ---------------------------------
+                // -------------------------------------------------
+                // ADMIN ME
+                // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/admin/me"
                 ).permitAll()
 
-                // ---------------------------------
-                // Authentication
-                // ---------------------------------
-                .requestMatchers("/api/auth/**").permitAll()
+                // -------------------------------------------------
+                // AUTH APIs
+                // -------------------------------------------------
+                .requestMatchers(
+                    "/api/auth/**"
+                ).permitAll()
 
-                // ---------------------------------
-                // Public GET APIs
-                // ---------------------------------
+                // -------------------------------------------------
+                // PACKAGES
+                // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/packages/**"
                 ).permitAll()
 
+                // -------------------------------------------------
+                // DESTINATIONS
+                // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/destinations/**"
                 ).permitAll()
 
+                // -------------------------------------------------
+                // HOTELS
+                // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/hotels/**"
                 ).permitAll()
 
+                // -------------------------------------------------
+                // ACTIVITIES
+                // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/activities/**"
                 ).permitAll()
 
+                // -------------------------------------------------
+                // BLOGS
+                // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/blogs/**"
                 ).permitAll()
 
+                // -------------------------------------------------
+                // TESTIMONIALS
+                // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/testimonials"
                 ).permitAll()
 
+                // -------------------------------------------------
+                // FAQS
+                // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/faqs"
                 ).permitAll()
 
+                // -------------------------------------------------
+                // SETTINGS
+                // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/settings"
                 ).permitAll()
 
+                // -------------------------------------------------
+                // DASHBOARD
+                // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/dashboard/**"
                 ).permitAll()
 
-                // ---------------------------------
-                // Images
-                // ---------------------------------
+                // -------------------------------------------------
+                // IMAGES
+                // -------------------------------------------------
                 .requestMatchers(
                     "/api/images/**"
                 ).permitAll()
 
-                // ---------------------------------
-                // Public Leads
-                // ---------------------------------
+                // -------------------------------------------------
+                // PUBLIC LEADS
+                // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.POST,
                     "/api/leads/public/submit"
                 ).permitAll()
 
-                // ---------------------------------
-                // Health Check
-                // ---------------------------------
+                // -------------------------------------------------
+                // HEALTH CHECK
+                // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
                     "/health"
                 ).permitAll()
 
-                // ---------------------------------
-                // Everything else requires JWT
-                // ---------------------------------
+                // -------------------------------------------------
+                // EVERYTHING ELSE
+                // -------------------------------------------------
                 .anyRequest().authenticated()
             )
 
-            // =========================
-            // JWT Filter
-            // =========================
+            // =================================================
+            // JWT FILTER
+            // =================================================
             .addFilterBefore(
                 jwtAuthFilter,
                 UsernamePasswordAuthenticationFilter.class
@@ -254,17 +296,24 @@ public class SecurityConfig {
     // =========================================================
     // CORS CONFIGURATION
     // =========================================================
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        // Your Vercel frontend
+        // -----------------------------------------------------
+        // ALLOWED FRONTENDS
+        // -----------------------------------------------------
         config.setAllowedOrigins(List.of(
-            "https://frontend-travel-eyls-sigma.vercel.app"
+            "https://frontend-travel-eyls-ejn44br4r-dhavalmaqlaim-5177.vercel.app",
+            "http://localhost:5173",
+            "http://localhost:3000"
         ));
 
-        // HTTP methods
+        // -----------------------------------------------------
+        // HTTP METHODS
+        // -----------------------------------------------------
         config.setAllowedMethods(List.of(
             "GET",
             "POST",
@@ -274,21 +323,38 @@ public class SecurityConfig {
             "OPTIONS"
         ));
 
-        // Request headers
+        // -----------------------------------------------------
+        // HEADERS
+        // -----------------------------------------------------
         config.setAllowedHeaders(List.of("*"));
 
-        // Required if frontend sends cookies/auth credentials
+        // -----------------------------------------------------
+        // EXPOSED HEADERS
+        // -----------------------------------------------------
+        config.setExposedHeaders(List.of(
+            "Authorization"
+        ));
+
+        // -----------------------------------------------------
+        // CREDENTIALS
+        // -----------------------------------------------------
         config.setAllowCredentials(true);
 
-        // Cache preflight response
+        // -----------------------------------------------------
+        // PREFLIGHT CACHE
+        // -----------------------------------------------------
         config.setMaxAge(3600L);
 
+        // -----------------------------------------------------
+        // APPLY CORS TO ALL ENDPOINTS
+        // -----------------------------------------------------
         UrlBasedCorsConfigurationSource source =
             new UrlBasedCorsConfigurationSource();
 
-        // IMPORTANT:
-        // Apply CORS to ALL endpoints, not only /api/**
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration(
+            "/**",
+            config
+        );
 
         return source;
     }
