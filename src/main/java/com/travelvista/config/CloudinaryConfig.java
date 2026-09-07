@@ -37,91 +37,40 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Configuration
 public class CloudinaryConfig {
 
-    /*
-     * Preferred configuration:
-     *
-     * CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME
-     *
-     * Railway environment variable:
-     * CLOUDINARY_URL
-     */
-
-    @Value("${CLOUDINARY_URL:}")
-    private String cloudinaryUrl;
-
-    /*
-     * Optional fallback configuration.
-     *
-     * These are useful if CLOUDINARY_URL is not available.
-     */
-    @Value("${cloudinary.cloud_name:}")
+    @Value("${CLOUDINARY_CLOUD_NAME:${cloudinary.cloud_name:}}")
     private String cloudName;
 
-    @Value("${cloudinary.api_key:}")
+    @Value("${CLOUDINARY_API_KEY:${cloudinary.api_key:}}")
     private String apiKey;
 
-    @Value("${cloudinary.api_secret:}")
+    @Value("${CLOUDINARY_API_SECRET:${cloudinary.api_secret:}}")
     private String apiSecret;
 
     @Bean
     public Cloudinary cloudinary() {
 
-        /*
-         * ============================================================
-         * OPTION 1: CLOUDINARY_URL
-         * ============================================================
-         */
+        if (cloudName == null || cloudName.isBlank()
+                || apiKey == null || apiKey.isBlank()
+                || apiSecret == null || apiSecret.isBlank()) {
 
-        if (cloudinaryUrl != null &&
-                !cloudinaryUrl.trim().isEmpty()) {
-
-            String url = cloudinaryUrl.trim();
-
-            // Do not print the URL because it contains API secret.
-            System.out.println(
-                    "Cloudinary configuration: CLOUDINARY_URL detected"
-            );
-
-            return new Cloudinary(url);
-        }
-
-        /*
-         * ============================================================
-         * OPTION 2: Individual environment variables
-         * ============================================================
-         */
-
-        if (cloudName != null &&
-                !cloudName.trim().isEmpty() &&
-                apiKey != null &&
-                !apiKey.trim().isEmpty() &&
-                apiSecret != null &&
-                !apiSecret.trim().isEmpty()) {
-
-            System.out.println(
-                    "Cloudinary configuration: individual credentials detected"
-            );
-
-            return new Cloudinary(
-                    cloudName.trim(),
-                    apiKey.trim(),
-                    apiSecret.trim()
+            throw new IllegalStateException(
+                    "Cloudinary credentials are not configured"
             );
         }
 
-        /*
-         * ============================================================
-         * No configuration
-         * ============================================================
-         */
+        Map<String, String> config = new HashMap<>();
 
-        System.err.println(
-                "WARNING: Cloudinary credentials are not configured."
-        );
+        config.put("cloud_name", cloudName.trim());
+        config.put("api_key", apiKey.trim());
+        config.put("api_secret", apiSecret.trim());
+        config.put("secure", "true");
 
-        return new Cloudinary();
+        return new Cloudinary(config);
     }
 }
