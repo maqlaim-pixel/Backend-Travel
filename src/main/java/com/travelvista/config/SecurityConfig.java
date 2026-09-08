@@ -78,6 +78,292 @@
 //     }
 // }
 
+// package com.travelvista.config;
+
+// import org.springframework.context.annotation.Bean;
+// import org.springframework.context.annotation.Configuration;
+// import org.springframework.http.HttpMethod;
+// import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+// import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+// import org.springframework.security.config.http.SessionCreationPolicy;
+// import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+// import org.springframework.security.crypto.password.PasswordEncoder;
+// import org.springframework.security.web.SecurityFilterChain;
+// import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+// import org.springframework.web.cors.CorsConfiguration;
+// import org.springframework.web.cors.CorsConfigurationSource;
+// import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+// import java.util.List;
+
+// @Configuration
+// @EnableWebSecurity
+// public class SecurityConfig {
+
+//     private final JwtAuthFilter jwtAuthFilter;
+
+//     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+//         this.jwtAuthFilter = jwtAuthFilter;
+//     }
+
+//     // =========================================================
+//     // PASSWORD ENCODER
+//     // =========================================================
+
+//     @Bean
+//     public PasswordEncoder passwordEncoder() {
+//         return new BCryptPasswordEncoder();
+//     }
+
+//     // =========================================================
+//     // SECURITY FILTER CHAIN
+//     // =========================================================
+
+//     @Bean
+//     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+//         http
+
+//             // =================================================
+//             // CORS
+//             // =================================================
+//             .cors(cors ->
+//                 cors.configurationSource(corsConfigurationSource())
+//             )
+
+//             // =================================================
+//             // CSRF
+//             // =================================================
+//             .csrf(csrf -> csrf.disable())
+
+//             // =================================================
+//             // STATELESS JWT SESSION
+//             // =================================================
+//             .sessionManagement(sm ->
+//                 sm.sessionCreationPolicy(
+//                     SessionCreationPolicy.STATELESS
+//                 )
+//             )
+
+//             // =================================================
+//             // AUTHORIZATION
+//             // =================================================
+//             .authorizeHttpRequests(auth -> auth
+
+//                 // -------------------------------------------------
+//                 // CORS PREFLIGHT
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     HttpMethod.OPTIONS,
+//                     "/**"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // ADMIN LOGIN
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     HttpMethod.POST,
+//                     "/api/admin/login"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // ADMIN ME
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     HttpMethod.GET,
+//                     "/api/admin/me"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // AUTH APIs
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     "/api/auth/**"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // PACKAGES
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     HttpMethod.GET,
+//                     "/api/packages/**"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // DESTINATIONS
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     HttpMethod.GET,
+//                     "/api/destinations/**"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // HOTELS
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     HttpMethod.GET,
+//                     "/api/hotels/**"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // ACTIVITIES
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     HttpMethod.GET,
+//                     "/api/activities/**"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // BLOGS
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     HttpMethod.GET,
+//                     "/api/blogs/**"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // TESTIMONIALS
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     HttpMethod.GET,
+//                     "/api/testimonials"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // FAQS
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     HttpMethod.GET,
+//                     "/api/faqs"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // SETTINGS
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     HttpMethod.GET,
+//                     "/api/settings"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // DASHBOARD
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     HttpMethod.GET,
+//                     "/api/dashboard/**"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // IMAGES
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     "/api/images/**"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // PUBLIC LEADS
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     HttpMethod.POST,
+//                     "/api/leads/public/submit"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // HEALTH CHECK
+//                 // -------------------------------------------------
+//                 .requestMatchers(
+//                     HttpMethod.GET,
+//                     "/health"
+//                 ).permitAll()
+
+//                 // -------------------------------------------------
+//                 // EVERYTHING ELSE
+//                 // -------------------------------------------------
+//                 .anyRequest().authenticated()
+//             )
+
+//             // =================================================
+//             // JWT FILTER
+//             // =================================================
+//             .addFilterBefore(
+//                 jwtAuthFilter,
+//                 UsernamePasswordAuthenticationFilter.class
+//             );
+
+//         return http.build();
+//     }
+
+//     // =========================================================
+//     // CORS CONFIGURATION
+//     // =========================================================
+
+//     @Bean
+//     public CorsConfigurationSource corsConfigurationSource() {
+
+//         CorsConfiguration config = new CorsConfiguration();
+
+//         // -----------------------------------------------------
+//         // ALLOWED FRONTENDS
+//         // -----------------------------------------------------
+//         config.setAllowedOrigins(List.of(
+//             "https://frontend-travel-eyls-ejn44br4r-dhavalmaqlaim-5177.vercel.app",
+//             "http://localhost:5173",
+//             "http://localhost:3000"
+//         ));
+
+//         // -----------------------------------------------------
+//         // HTTP METHODS
+//         // -----------------------------------------------------
+//         config.setAllowedMethods(List.of(
+//             "GET",
+//             "POST",
+//             "PUT",
+//             "DELETE",
+//             "PATCH",
+//             "OPTIONS"
+//         ));
+
+//         // -----------------------------------------------------
+//         // HEADERS
+//         // -----------------------------------------------------
+//         config.setAllowedHeaders(List.of("*"));
+
+//         // -----------------------------------------------------
+//         // EXPOSED HEADERS
+//         // -----------------------------------------------------
+//         config.setExposedHeaders(List.of(
+//             "Authorization"
+//         ));
+
+//         // -----------------------------------------------------
+//         // CREDENTIALS
+//         // -----------------------------------------------------
+//         config.setAllowCredentials(true);
+
+//         // -----------------------------------------------------
+//         // PREFLIGHT CACHE
+//         // -----------------------------------------------------
+//         config.setMaxAge(3600L);
+
+//         // -----------------------------------------------------
+//         // APPLY CORS TO ALL ENDPOINTS
+//         // -----------------------------------------------------
+//         UrlBasedCorsConfigurationSource source =
+//             new UrlBasedCorsConfigurationSource();
+
+//         source.registerCorsConfiguration(
+//             "/**",
+//             config
+//         );
+
+//         return source;
+//     }
+// }
+
+
+
+
+
 package com.travelvista.config;
 
 import org.springframework.context.annotation.Bean;
@@ -123,7 +409,6 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-
             // =================================================
             // CORS
             // =================================================
@@ -137,7 +422,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
 
             // =================================================
-            // STATELESS JWT SESSION
+            // STATELESS JWT
             // =================================================
             .sessionManagement(sm ->
                 sm.sessionCreationPolicy(
@@ -182,7 +467,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // -------------------------------------------------
-                // PACKAGES
+                // PUBLIC PACKAGES
                 // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
@@ -190,7 +475,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // -------------------------------------------------
-                // DESTINATIONS
+                // PUBLIC DESTINATIONS
                 // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
@@ -198,7 +483,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // -------------------------------------------------
-                // HOTELS
+                // PUBLIC HOTELS
                 // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
@@ -206,7 +491,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // -------------------------------------------------
-                // ACTIVITIES
+                // PUBLIC ACTIVITIES
                 // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
@@ -214,7 +499,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // -------------------------------------------------
-                // BLOGS
+                // PUBLIC BLOGS
                 // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
@@ -222,7 +507,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // -------------------------------------------------
-                // TESTIMONIALS
+                // PUBLIC TESTIMONIALS
                 // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
@@ -230,7 +515,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // -------------------------------------------------
-                // FAQS
+                // PUBLIC FAQS
                 // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
@@ -238,7 +523,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // -------------------------------------------------
-                // SETTINGS
+                // PUBLIC SETTINGS
                 // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
@@ -246,7 +531,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // -------------------------------------------------
-                // DASHBOARD
+                // PUBLIC DASHBOARD
                 // -------------------------------------------------
                 .requestMatchers(
                     HttpMethod.GET,
@@ -254,7 +539,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // -------------------------------------------------
-                // IMAGES
+                // IMAGE APIs
                 // -------------------------------------------------
                 .requestMatchers(
                     "/api/images/**"
@@ -303,17 +588,20 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // -----------------------------------------------------
-        // ALLOWED FRONTENDS
+        // ALLOWED FRONTEND ORIGINS
         // -----------------------------------------------------
+
         config.setAllowedOrigins(List.of(
-            "https://frontend-travel-eyls-ejn44br4r-dhavalmaqlaim-5177.vercel.app",
             "http://localhost:5173",
-            "http://localhost:3000"
+            "http://localhost:3000",
+
+            "https://frontend-travel-eyls-ejn44br4r-dhavalmaqlaim-5177.vercel.app"
         ));
 
         // -----------------------------------------------------
-        // HTTP METHODS
+        // ALLOWED METHODS
         // -----------------------------------------------------
+
         config.setAllowedMethods(List.of(
             "GET",
             "POST",
@@ -324,13 +612,21 @@ public class SecurityConfig {
         ));
 
         // -----------------------------------------------------
-        // HEADERS
+        // ALLOWED HEADERS
         // -----------------------------------------------------
-        config.setAllowedHeaders(List.of("*"));
+
+        config.setAllowedHeaders(List.of(
+            "Authorization",
+            "Content-Type",
+            "Accept",
+            "Origin",
+            "X-Requested-With"
+        ));
 
         // -----------------------------------------------------
         // EXPOSED HEADERS
         // -----------------------------------------------------
+
         config.setExposedHeaders(List.of(
             "Authorization"
         ));
@@ -338,16 +634,19 @@ public class SecurityConfig {
         // -----------------------------------------------------
         // CREDENTIALS
         // -----------------------------------------------------
+
         config.setAllowCredentials(true);
 
         // -----------------------------------------------------
         // PREFLIGHT CACHE
         // -----------------------------------------------------
+
         config.setMaxAge(3600L);
 
         // -----------------------------------------------------
-        // APPLY CORS TO ALL ENDPOINTS
+        // APPLY TO ALL API / WEB ROUTES
         // -----------------------------------------------------
+
         UrlBasedCorsConfigurationSource source =
             new UrlBasedCorsConfigurationSource();
 
