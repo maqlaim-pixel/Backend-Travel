@@ -379,6 +379,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import java.util.List;
 
@@ -392,190 +393,9 @@ public class SecurityConfig {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
-    // =========================================================
-    // PASSWORD ENCODER
-    // =========================================================
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    // =========================================================
-    // SECURITY FILTER CHAIN
-    // =========================================================
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        http
-            // =================================================
-            // CORS
-            // =================================================
-            .cors(cors ->
-                cors.configurationSource(corsConfigurationSource())
-            )
-
-            // =================================================
-            // CSRF
-            // =================================================
-            .csrf(csrf -> csrf.disable())
-
-            // =================================================
-            // STATELESS JWT
-            // =================================================
-            .sessionManagement(sm ->
-                sm.sessionCreationPolicy(
-                    SessionCreationPolicy.STATELESS
-                )
-            )
-
-            // =================================================
-            // AUTHORIZATION
-            // =================================================
-            .authorizeHttpRequests(auth -> auth
-
-                // -------------------------------------------------
-                // CORS PREFLIGHT
-                // -------------------------------------------------
-                .requestMatchers(
-                    HttpMethod.OPTIONS,
-                    "/**"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // ADMIN LOGIN
-                // -------------------------------------------------
-                .requestMatchers(
-                    HttpMethod.POST,
-                    "/api/admin/login"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // ADMIN ME
-                // -------------------------------------------------
-                .requestMatchers(
-                    HttpMethod.GET,
-                    "/api/admin/me"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // AUTH APIs
-                // -------------------------------------------------
-                .requestMatchers(
-                    "/api/auth/**"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // PUBLIC PACKAGES
-                // -------------------------------------------------
-                .requestMatchers(
-                    HttpMethod.GET,
-                    "/api/packages/**"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // PUBLIC DESTINATIONS
-                // -------------------------------------------------
-                .requestMatchers(
-                    HttpMethod.GET,
-                    "/api/destinations/**"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // PUBLIC HOTELS
-                // -------------------------------------------------
-                .requestMatchers(
-                    HttpMethod.GET,
-                    "/api/hotels/**"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // PUBLIC ACTIVITIES
-                // -------------------------------------------------
-                .requestMatchers(
-                    HttpMethod.GET,
-                    "/api/activities/**"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // PUBLIC BLOGS
-                // -------------------------------------------------
-                .requestMatchers(
-                    HttpMethod.GET,
-                    "/api/blogs/**"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // PUBLIC TESTIMONIALS
-                // -------------------------------------------------
-                .requestMatchers(
-                    HttpMethod.GET,
-                    "/api/testimonials"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // PUBLIC FAQS
-                // -------------------------------------------------
-                .requestMatchers(
-                    HttpMethod.GET,
-                    "/api/faqs"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // PUBLIC SETTINGS
-                // -------------------------------------------------
-                .requestMatchers(
-                    HttpMethod.GET,
-                    "/api/settings"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // PUBLIC DASHBOARD
-                // -------------------------------------------------
-                .requestMatchers(
-                    HttpMethod.GET,
-                    "/api/dashboard/**"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // IMAGE APIs
-                // -------------------------------------------------
-                .requestMatchers(
-                    "/api/images/**"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // PUBLIC LEADS
-                // -------------------------------------------------
-                .requestMatchers(
-                    HttpMethod.POST,
-                    "/api/leads/public/submit"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // HEALTH CHECK
-                // -------------------------------------------------
-                .requestMatchers(
-                    HttpMethod.GET,
-                    "/health"
-                ).permitAll()
-
-                // -------------------------------------------------
-                // EVERYTHING ELSE
-                // -------------------------------------------------
-                .anyRequest().authenticated()
-            )
-
-            // =================================================
-            // JWT FILTER
-            // =================================================
-            .addFilterBefore(
-                jwtAuthFilter,
-                UsernamePasswordAuthenticationFilter.class
-            );
-
-        return http.build();
     }
 
     // =========================================================
@@ -587,20 +407,11 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        // -----------------------------------------------------
-        // ALLOWED FRONTEND ORIGINS
-        // -----------------------------------------------------
-
         config.setAllowedOrigins(List.of(
             "http://localhost:5173",
             "http://localhost:3000",
-
             "https://frontend-travel-eyls-ejn44br4r-dhavalmaqlaim-5177.vercel.app"
         ));
-
-        // -----------------------------------------------------
-        // ALLOWED METHODS
-        // -----------------------------------------------------
 
         config.setAllowedMethods(List.of(
             "GET",
@@ -611,10 +422,6 @@ public class SecurityConfig {
             "OPTIONS"
         ));
 
-        // -----------------------------------------------------
-        // ALLOWED HEADERS
-        // -----------------------------------------------------
-
         config.setAllowedHeaders(List.of(
             "Authorization",
             "Content-Type",
@@ -623,38 +430,162 @@ public class SecurityConfig {
             "X-Requested-With"
         ));
 
-        // -----------------------------------------------------
-        // EXPOSED HEADERS
-        // -----------------------------------------------------
-
         config.setExposedHeaders(List.of(
             "Authorization"
         ));
 
-        // -----------------------------------------------------
-        // CREDENTIALS
-        // -----------------------------------------------------
-
         config.setAllowCredentials(true);
 
-        // -----------------------------------------------------
-        // PREFLIGHT CACHE
-        // -----------------------------------------------------
-
         config.setMaxAge(3600L);
-
-        // -----------------------------------------------------
-        // APPLY TO ALL API / WEB ROUTES
-        // -----------------------------------------------------
 
         UrlBasedCorsConfigurationSource source =
             new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration(
-            "/**",
-            config
-        );
+        source.registerCorsConfiguration("/**", config);
 
         return source;
+    }
+
+    // =========================================================
+    // EXPLICIT CORS FILTER
+    // =========================================================
+
+    @Bean
+    public CorsFilter corsFilter(
+            CorsConfigurationSource corsConfigurationSource
+    ) {
+        return new CorsFilter(corsConfigurationSource);
+    }
+
+    // =========================================================
+    // SECURITY FILTER CHAIN
+    // =========================================================
+
+    @Bean
+    public SecurityFilterChain filterChain(
+            HttpSecurity http
+    ) throws Exception {
+
+        http
+            .cors(cors ->
+                cors.configurationSource(corsConfigurationSource())
+            )
+
+            .csrf(csrf ->
+                csrf.disable()
+            )
+
+            .sessionManagement(sm ->
+                sm.sessionCreationPolicy(
+                    SessionCreationPolicy.STATELESS
+                )
+            )
+
+            .authorizeHttpRequests(auth -> auth
+
+                // CORS PREFLIGHT
+                .requestMatchers(
+                    HttpMethod.OPTIONS,
+                    "/**"
+                ).permitAll()
+
+                // ADMIN LOGIN
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/admin/login"
+                ).permitAll()
+
+                // ADMIN ME
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/admin/me"
+                ).permitAll()
+
+                // AUTH
+                .requestMatchers(
+                    "/api/auth/**"
+                ).permitAll()
+
+                // PUBLIC PACKAGES
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/packages/**"
+                ).permitAll()
+
+                // PUBLIC DESTINATIONS
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/destinations/**"
+                ).permitAll()
+
+                // PUBLIC HOTELS
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/hotels/**"
+                ).permitAll()
+
+                // PUBLIC ACTIVITIES
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/activities/**"
+                ).permitAll()
+
+                // PUBLIC BLOGS
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/blogs/**"
+                ).permitAll()
+
+                // PUBLIC TESTIMONIALS
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/testimonials"
+                ).permitAll()
+
+                // PUBLIC FAQS
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/faqs"
+                ).permitAll()
+
+                // PUBLIC SETTINGS
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/settings"
+                ).permitAll()
+
+                // PUBLIC DASHBOARD
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/dashboard/**"
+                ).permitAll()
+
+                // IMAGES
+                .requestMatchers(
+                    "/api/images/**"
+                ).permitAll()
+
+                // PUBLIC LEADS
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/leads/public/submit"
+                ).permitAll()
+
+                // HEALTH
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/health"
+                ).permitAll()
+
+                // EVERYTHING ELSE
+                .anyRequest().authenticated()
+            )
+
+            .addFilterBefore(
+                jwtAuthFilter,
+                UsernamePasswordAuthenticationFilter.class
+            );
+
+        return http.build();
     }
 }
