@@ -1,0 +1,47 @@
+# ─── Build Output ───
+target/
+*.class
+*.jar
+*.war
+
+# ─── IDE ───
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.classpath
+.project
+*.swp
+*.swo
+*~
+
+# ─── OS ───
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Logs ───
+*.log
+
+# ─── Environment / Secrets ───
+.env
+.env.local
+.env.*.local
+.env.docker
+
+# ─── Docker ───
+docker-compose.override.yml
+
+# ─── Frontend (not part of this repo) ───
+node_modules/
+dist/
+.freebuff/
+.travelfrontend/
+
+# ─── Uploads (user-generated) ───
+uploads/
+
+# ─── Legacy (kept locally, not tracked) ───
+backend-java/
